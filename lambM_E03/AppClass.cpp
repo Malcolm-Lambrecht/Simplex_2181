@@ -6,6 +6,7 @@ AppClass& AppClass::operator=(AppClass const& input) { return *this; }
 AppClass::~AppClass(void){ Release(); }
 void AppClass::Run(void)
 {
+	complementaryEnable = false;
 	//Initialize the system with the fields recollected by the constructor
 	Init();
 	
@@ -115,6 +116,8 @@ void AppClass::ProcessKeyboard(sf::Event a_event)
 		m_v3Color = glm::vec3(0.0f, 0.0f, 1.0f);
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
 		m_v3Color = glm::vec3(-1.0f, -1.0f, -1.0f);
+	else
+		complementaryEnable = !complementaryEnable;
 }
 void AppClass::Display(void)
 {
@@ -123,7 +126,9 @@ void AppClass::Display(void)
 
 	//read uniforms and send values
 	GLuint SolidColor = glGetUniformLocation(m_uShaderProgramID, "SolidColor");
-	glUniform3f(SolidColor, m_v3Color.r, m_v3Color.g, m_v3Color.b);
+	glUniform3f(SolidColor, m_v3Color.r, m_v3Color.g, m_v3Color.b); 
+	GLboolean DisplayComplementary = glGetUniformLocation(m_uShaderProgramID, "DisplayComplementary");
+	glUniform1i(DisplayComplementary, complementaryEnable);
 
 	//draw content
 	glDrawArrays(GL_TRIANGLES, 0, 3);

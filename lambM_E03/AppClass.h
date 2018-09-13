@@ -28,7 +28,7 @@ class AppClass
 	GLuint m_uShaderProgramID = 0; //Shader program
 	GLuint m_uVAO = 0; //Vertex Array Object
 	GLuint m_uVBO = 0; //Vertex Buffer Object
-	
+	bool complementaryEnable;
 	glm::vec3 m_v3Color = glm::vec3(-1.0f); //Color of shape
 
 	bool m_bRunning = true; //Running Flag
@@ -119,7 +119,6 @@ private:
 	*/
 	void ProcessKeyboard(sf::Event a_event);
 };
-
 #endif //__SFMLAPPCLASS_H_
 
 /*
