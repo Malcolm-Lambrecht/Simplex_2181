@@ -1,4 +1,5 @@
 #include "MyMesh.h"
+#include <vector>
 void MyMesh::Init(void)
 {
 	m_bBinded = false;
@@ -276,7 +277,31 @@ void MyMesh::GenerateCone(float a_fRadius, float a_fHeight, int a_nSubdivisions,
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	//draw tris counterclockwise
+	vector3 base(0, 0, 0.5 * -a_fHeight); //center of the base
+	vector3 point2(0, 0, 0.5 * -a_fHeight); //point to be reused
+	vector3 point3(0, 0, 0.5 * -a_fHeight);// point to be added
+	vector3 tip(0, 0, 0.5 * a_fHeight);//tip of the cone
+	
+	//calculate theta for a circle with this many subdivisions
+	float theta = (2 * PI) / a_nSubdivisions;
+
+	//std::cout << "theta:"<<theta << std::endl;
+
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		//draw the tri connected to the base
+		//calculate point 2
+		point2.x = a_fRadius * sin(theta * i);
+		point2.y = a_fRadius * cos(theta * i);
+
+		//calculate point 3
+		point3.x = a_fRadius * sin(theta * i - theta);
+		point3.y = a_fRadius * cos(theta * i - theta);
+
+		AddTri(base, point2, point3);
+		//draw the tri connecting base to tip
+		AddTri(tip, point3, point2);
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -300,7 +325,38 @@ void MyMesh::GenerateCylinder(float a_fRadius, float a_fHeight, int a_nSubdivisi
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	vector3 centerTop(0, 0, 0.5 * a_fHeight);
+	vector3 centerBot(0, 0, 0.5 * -a_fHeight);
+	vector3 point2(0, 0, 0.5 * a_fHeight);
+	vector3 point3(0, 0, 0.5 * a_fHeight);
+	vector3 point4(0, 0, 0.5 * -a_fHeight);
+	vector3 point5(0, 0, 0.5 * -a_fHeight);
+
+	//calculate theta for a circle with this many subdivisions
+	float theta = (2 * PI) / a_nSubdivisions;
+
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		//draw the top of the cylinder
+		point2.x = a_fRadius * sin(theta * i);
+		point2.y = a_fRadius * cos(theta * i);
+
+		point3.x = a_fRadius * sin(theta * i - theta);
+		point3.y = a_fRadius * cos(theta * i - theta);
+
+		AddTri(centerTop, point2, point3);
+
+		//draw the bottom of the cylinder
+		point4.x = a_fRadius * sin(theta * i);
+		point4.y = a_fRadius * cos(theta * i);
+
+		point5.x = a_fRadius * sin(theta * i - theta);
+		point5.y = a_fRadius * cos(theta * i - theta);
+
+		AddTri(centerBot, point5, point4);
+
+		//draw the sides of the cylinder
+		AddQuad(point4, point5, point2, point3);
+	}
 	// -------------------------------
 
 	// Adding information about color
@@ -330,8 +386,67 @@ void MyMesh::GenerateTube(float a_fOuterRadius, float a_fInnerRadius, float a_fH
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
+	//verts of the top of the tube
+	vector3 centerTop(0, 0, 0.5*a_fHeight);
+	vector3 topInnerB(0, 0, 0.5*a_fHeight);
+	vector3 topInnerC(0, 0, 0.5*a_fHeight);
+	vector3 topOuterB(0, 0, 0.5*a_fHeight);
+	vector3 topOuterC(0, 0, 0.5*a_fHeight);
+
+	//verts of the bottom of the tube
+	vector3 centerBot(0, 0, 0.5*-a_fHeight);
+	vector3 botInnerB(0, 0, 0.5*-a_fHeight);
+	vector3 botInnerC(0, 0, 0.5*-a_fHeight);
+	vector3 botOuterB(0, 0, 0.5*-a_fHeight);
+	vector3 botOuterC(0, 0, 0.5*-a_fHeight);
+
+	//theta
+	float theta = (2 * PI) / a_nSubdivisions;
+
+	//calculation and drawing
+	for (int i = 0; i < a_nSubdivisions; i++) {
+		//calc top
+		//inner points
+		topInnerC.x = a_fInnerRadius * sin(theta * i);
+		topInnerC.y = a_fInnerRadius * cos(theta * i);
+
+		topInnerB.x = a_fInnerRadius * sin(theta * i - theta);
+		topInnerB.y = a_fInnerRadius * cos(theta * i - theta);
+		//outer points
+		topOuterC.x = a_fOuterRadius * sin(theta * i);
+		topOuterC.y = a_fOuterRadius * cos(theta * i);
+
+		topOuterB.x = a_fOuterRadius * sin(theta * i - theta);
+		topOuterB.y = a_fOuterRadius * cos(theta * i - theta);
+
+		//calc bot
+		//inner points
+		botInnerC.x = a_fInnerRadius * sin(theta * i);
+		botInnerC.y = a_fInnerRadius * cos(theta * i);
+
+		botInnerB.x = a_fInnerRadius * sin(theta * i - theta);
+		botInnerB.y = a_fInnerRadius * cos(theta * i - theta);
+		//outer points
+		botOuterC.x = a_fOuterRadius * sin(theta * i);
+		botOuterC.y = a_fOuterRadius * cos(theta * i);
+
+		botOuterB.x = a_fOuterRadius * sin(theta * i - theta);
+		botOuterB.y = a_fOuterRadius * cos(theta * i - theta);
+
+		//draw top
+		AddQuad(topOuterC, topOuterB, topInnerC, topInnerB);
+
+		//draw bot
+		AddQuad(botInnerC, botInnerB, botOuterC, botOuterB);
+
+		//draw outer
+		AddQuad(botOuterC, botOuterB, topOuterC, topOuterB);
+
+		//draw inner
+		AddQuad(botInnerB, botInnerC, topInnerB, topInnerC);
+	}
 	// -------------------------------
+
 
 	// Adding information about color
 	CompleteMesh(a_v3Color);
@@ -360,11 +475,61 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 
 	Release();
 	Init();
-
+	//subdivisions A is vertical subdivisions
+	//subdivisions B is horizonatal
 	// Replace this with your code
-	GenerateCube(a_fOuterRadius * 2.0f, a_v3Color);
 	// -------------------------------
+	std::vector<vector3> guidePoints;
+	float centerRadius = (a_fInnerRadius + a_fOuterRadius) / 2;
+	float radiusDifference = (a_fOuterRadius - a_fInnerRadius) / 2;
+	float theta = (2 * PI) / a_nSubdivisionsB;
+	float roundToZero = 0.001f;
+	for (int i = 0; i < a_nSubdivisionsB; i++) {
+		vector3 temp(0, (radiusDifference * sin(theta * i)) + centerRadius, (radiusDifference * cos(theta * i)) + centerRadius);
+		if (temp.y < roundToZero && temp.y > -roundToZero)
+			temp.y = 0.0f;
+		if (temp.z < roundToZero && temp.z > -roundToZero)
+			temp.z = 0.0f;
+		guidePoints.push_back(temp);
+		//std::cout << "X: " << temp.x << " Y: " << temp.y << " Z: " << temp.z << std::endl;
+	}
+	guidePoints.push_back(vector3(0, guidePoints[0].y, guidePoints[0].z));
+	vector3 pointA;
+	vector3 pointB;
+	vector3 pointC;
+	vector3 pointD;
+	theta = (2 * PI) / a_nSubdivisionsA;
+	for (int i = 0; i < guidePoints.size() - 1; i++) { //for each guidepoint draw a circle
+		std::cout << i << std::endl;
+		std::cout << "Value at: " << i<<" ("<< guidePoints[i].x<< ", "<< guidePoints[i].y<<", "<< guidePoints[i].z <<")"<<std::endl;
+		std::cout << "Draw level with Radius: "<<guidePoints[i].y << " to radius: "<< guidePoints[i+1].y<<std::endl<<std::endl;
+		for (int j = 0; j < a_nSubdivisionsA; j++) {
+			//next ring - theta
+			pointA.x = guidePoints[i + 1].y * sin(theta * j - theta);
+			pointA.y = guidePoints[i + 1].y * cos(theta * j - theta);
+			pointA.z = guidePoints[i + 1].z;
 
+			//next ring
+			pointB.x = guidePoints[i + 1].y * sin(theta * j);
+			pointB.y = guidePoints[i + 1].y * cos(theta * j);
+			pointB.z = guidePoints[i + 1].z;
+
+			//current ring - theta
+			pointC.x = guidePoints[i].y * sin(theta * j - theta);
+			pointC.y = guidePoints[i].y * cos(theta * j - theta);
+			pointC.z = guidePoints[i].z;
+
+			//current ring
+			pointD.x = guidePoints[i].y * sin(theta * j);
+			pointD.y = guidePoints[i].y * cos(theta * j);
+			pointD.z = guidePoints[i].z;
+
+			AddQuad(pointB, pointA, pointD, pointC);
+
+		}
+	}
+	//guidepoints[n].y is the radius of the circle to calculate
+	//guidepoints[n].z is the height to draw that circle
 	// Adding information about color
 	CompleteMesh(a_v3Color);
 	CompileOpenGL3X();
@@ -382,12 +547,99 @@ void MyMesh::GenerateSphere(float a_fRadius, int a_nSubdivisions, vector3 a_v3Co
 	}
 	if (a_nSubdivisions > 6)
 		a_nSubdivisions = 6;
-
+	a_nSubdivisions *= 2; // for testing rounder spheres
 	Release();
 	Init();
 
 	// Replace this with your code
-	GenerateCube(a_fRadius * 2.0f, a_v3Color);
+	vector3 center(0, 0, 0);
+	vector3 nPole(0, 0, a_fRadius);
+	vector3 sPole(0, 0, -a_fRadius);
+	vector3 pointA(0, 0, 0);
+	vector3 pointB(0, 0, 0);
+	vector3 pointC(0, 0, 0);
+	vector3 pointD(0, 0, 0);
+
+	float nZValues = 2 + (a_nSubdivisions * 2);//number of vertical subdivisions accounting for poles on the sphere
+	float zTheta = (2 * PI) / nZValues;//theta in radians for vertical circles
+	float nLevels = a_nSubdivisions + 2; //the number of unique z values in the sphere
+	std::vector<vector2> levelValues; //x = the z value, y = the radius
+
+	//calculate the zvalue and radius of each level
+	for (int i = 0; i < nLevels; i++) {
+		vector2 temp(a_fRadius * cos(zTheta * i), a_fRadius * sin(zTheta * i));//the first is z value for the level, second is radius of that level
+		//make sure theres no wierd rounding bits
+		if (temp.y < 0.01f)
+			temp.y = 0.0f;
+		if (temp.x < 0.01f && temp.x > -0.01f)
+			temp.x = 0.0f;
+		levelValues.push_back(temp);
+		//std::cout << "level: "<<i<<" z: "<<levelValues[i].x << std::endl;
+		//std::cout << "level: "<<i<<" y: "<<levelValues[i].y << std::endl;
+	}
+	float theta = (2 * PI) / a_nSubdivisions;//theta in radians for horizontal circles
+
+	//calculate and draw the level made of tris by the north pole
+	pointA.x = 0;
+	pointA.y = 0;
+	pointA.z = levelValues[0].x;
+
+	for (int j = 0; j < a_nSubdivisions; j++) {
+		pointB.x = levelValues[1].y * sin(theta * j);
+		pointB.y = levelValues[1].y * cos(theta * j);
+		pointB.z = levelValues[1].x;
+
+		pointC.x = levelValues[1].y * sin(theta * j - theta);
+		pointC.y = levelValues[1].y * cos(theta * j - theta);
+		pointC.z = levelValues[1].x;
+
+		AddTri(pointA, pointC, pointB);
+	}
+
+	//draw the levels made of quads
+	for (int i = 1; i < nLevels - 1; i++) {
+		for (int j = 0; j < a_nSubdivisions; j++) {
+			//lower level - theta
+			pointA.x = levelValues[i + 1].y * sin(theta * j - theta);
+			pointA.y = levelValues[i + 1].y * cos(theta * j - theta);
+			pointA.z = levelValues[i + 1].x;
+
+			//lower level
+			pointB.x = levelValues[i + 1].y * sin(theta * j);
+			pointB.y = levelValues[i + 1].y * cos(theta * j);
+			pointB.z = levelValues[i + 1].x;
+
+			//upperlevel - theta
+			pointC.x = levelValues[i].y * sin(theta * j - theta);
+			pointC.y = levelValues[i].y * cos(theta * j - theta);
+			pointC.z = levelValues[i].x;
+
+			//upper level
+			pointD.x = levelValues[i].y * sin(theta * j);
+			pointD.y = levelValues[i].y * cos(theta * j);
+			pointD.z = levelValues[i].x;
+
+			AddQuad(pointA, pointB, pointC, pointD);
+		}
+	}
+
+	//calculate and draw the level made of tris by the south pole
+	pointA.x = 0;
+	pointA.y = 0;
+	pointA.z = levelValues[nLevels -1].x;
+
+	for (int j = 0; j < a_nSubdivisions; j++) {
+		pointB.x = levelValues[nLevels - 2].y * sin(theta * j);
+		pointB.y = levelValues[nLevels - 2].y * cos(theta * j);
+		pointB.z = levelValues[nLevels - 2].x;
+
+		pointC.x = levelValues[nLevels - 2].y * sin(theta * j - theta);
+		pointC.y = levelValues[nLevels - 2].y * cos(theta * j - theta);
+		pointC.z = levelValues[nLevels - 2].x;
+
+		AddTri(pointA, pointB, pointC);
+	}
+	
 	// -------------------------------
 
 	// Adding information about color
