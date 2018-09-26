@@ -500,9 +500,9 @@ void MyMesh::GenerateTorus(float a_fOuterRadius, float a_fInnerRadius, int a_nSu
 	vector3 pointD;
 	theta = (2 * PI) / a_nSubdivisionsA;
 	for (int i = 0; i < guidePoints.size() - 1; i++) { //for each guidepoint draw a circle
-		std::cout << i << std::endl;
-		std::cout << "Value at: " << i<<" ("<< guidePoints[i].x<< ", "<< guidePoints[i].y<<", "<< guidePoints[i].z <<")"<<std::endl;
-		std::cout << "Draw level with Radius: "<<guidePoints[i].y << " to radius: "<< guidePoints[i+1].y<<std::endl<<std::endl;
+		//std::cout << i << std::endl;
+		//std::cout << "Value at: " << i<<" ("<< guidePoints[i].x<< ", "<< guidePoints[i].y<<", "<< guidePoints[i].z <<")"<<std::endl;
+		//::cout << "Draw level with Radius: "<<guidePoints[i].y << " to radius: "<< guidePoints[i+1].y<<std::endl<<std::endl;
 		for (int j = 0; j < a_nSubdivisionsA; j++) {
 			//next ring - theta
 			pointA.x = guidePoints[i + 1].y * sin(theta * j - theta);
