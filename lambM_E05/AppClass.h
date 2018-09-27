@@ -11,7 +11,7 @@ Date: 2017/05
 #include "imgui\ImGuiObject.h"
 
 #include "MyMesh.h"
-
+#include <vector>
 class Application
 {
 	MyMesh* m_pMesh = nullptr;
@@ -38,7 +38,7 @@ private:
 	Simplex::CameraManager* m_pCameraMngr = nullptr; //Singleton for the camera manager
 	ControllerInput* m_pController[8]; //Controller
 	uint m_uActCont = 0; //Active Controller of the Application
-
+	std::vector<MyMesh*> cubes;
 public:
 #pragma region Constructor / Run / Destructor
 	/*
