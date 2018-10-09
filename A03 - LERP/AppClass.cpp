@@ -2,7 +2,7 @@
 void Application::InitVariables(void)
 {
 	//Change this to your name and email
-	m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu";
+	m_sProgrammer = "Malcolm Lambrecht - jml1769@rit.edu";
 	
 	//Set the position and target of the camera
 	//(I'm at [0,0,10], looking at [0,0,0] and up is the positive Y axis)
@@ -36,6 +36,16 @@ void Application::InitVariables(void)
 	{
 		vector3 v3Color = WaveLengthToRGB(uColor); //calculate color based on wavelength
 		m_shapeList.push_back(m_pMeshMngr->GenerateTorus(fSize, fSize - 0.1f, 3, i, v3Color)); //generate a custom torus and add it to the meshmanager
+
+
+		//calculate the points on a circle with that many sides
+		std::vector<vector3> tempStopPath;
+		float theta = (2 * PI) / i;//i sides to the circle
+		for (int j = 0; j < i; j++) {//calculate 1 point for each side
+			tempStopPath.push_back(vector3(fSize * cos(theta * j), fSize * sin(theta * j), 0.1f));
+		}
+		stopListList.push_back(tempStopPath);
+		stopCountList.push_back(0);//each sphere will start on stop 0
 		fSize += 0.5f; //increment the size for the next orbit
 		uColor -= static_cast<uint>(decrements); //decrease the wavelength
 	}
@@ -62,16 +72,33 @@ void Application::Display(void)
 	/*
 		The following offset will orient the orbits as in the demo, start without it to make your life easier.
 	*/
-	//m4Offset = glm::rotate(IDENTITY_M4, 1.5708f, AXIS_Z);
+	m4Offset = glm::rotate(IDENTITY_M4, 1.5708f, AXIS_Z);
 
 	// draw a shapes
 	for (uint i = 0; i < m_uOrbits; ++i)
 	{
-		m_pMeshMngr->AddMeshToRenderList(m_shapeList[i], glm::rotate(m4Offset, 1.5708f, AXIS_X));
+		m_pMeshMngr->AddMeshToRenderList(m_shapeList[i], glm::rotate(m4Offset, 1.5708f, AXIS_X));//draw torus
 
-		//calculate the current position
+		static float lerpValue = 0.0f; //percentage of distance crossed between points
+		static int stopIndex = 0;
+		//if it has reached the next point reset the lerp value and move to the next point
+		if (lerpValue >= 1.0f) {
+			//reset the lerp value
+			lerpValue = 0.0f;
+			//increment the index of the point its heading to
+			stopIndex++;
+		}
+		
+		//calculate the current position/lerp the spheres
 		vector3 v3CurrentPos = ZERO_V3;
+
+		//lerp between the current stop and the next one
+		v3CurrentPos = glm::lerp(stopListList[i][stopIndex % stopListList[i].size()], stopListList[i][(stopIndex + 1 )% stopListList[i].size()], lerpValue);
+		
 		matrix4 m4Model = glm::translate(m4Offset, v3CurrentPos);
+
+		//increment lerp percent
+		lerpValue += 0.002f;
 
 		//draw spheres
 		m_pMeshMngr->AddSphereToRenderList(m4Model * glm::scale(vector3(0.1)), C_WHITE);
