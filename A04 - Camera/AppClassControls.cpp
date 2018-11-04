@@ -370,6 +370,11 @@ void Application::CameraRotation(float a_fSpeed)
 	}
 	//Change the Yaw and the Pitch of the camera
 	SetCursorPos(CenterX, CenterY);//Position the mouse in the center
+
+	//rotate by fAngleX and fAngleY
+	
+	m_pCamera->RotateYaw(fAngleY * a_fSpeed);
+	m_pCamera->RotatePitch(fAngleX * a_fSpeed);
 }
 //Keyboard
 void Application::ProcessKeyboard(void)
@@ -386,10 +391,18 @@ void Application::ProcessKeyboard(void)
 	if (fMultiplier)
 		fSpeed *= 5.0f;
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-		m_pCamera->MoveForward(fSpeed);
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))//forward
 		m_pCamera->MoveForward(-fSpeed);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))//backward
+		m_pCamera->MoveForward(fSpeed);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))//left
+		m_pCamera->MoveSideways(-fSpeed);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))//right
+		m_pCamera->MoveSideways(fSpeed);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))//up
+		m_pCamera->MoveVertical(-fSpeed);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))//down
+		m_pCamera->MoveVertical(fSpeed);
 #pragma endregion
 }
 //Joystick

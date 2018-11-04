@@ -12,13 +12,21 @@ namespace Simplex
 
 class MyCamera
 {
-	vector3 m_v3Position = vector3(0.0f, 0.0f, 10.0f); //Where my camera is located
+	vector3 m_v3Position = vector3(0.0f, 0.0f, 1.0f * m_fTargetDistance); //Where my camera is located
 	vector3 m_v3Target = vector3(0.0f, 0.0f, 0.0f); //What I'm looking at
 	vector3 m_v3Above = vector3(0.0f, 1.0f, 0.0f); //What is above the camera
+
+	vector3 m_v3CameraUp = vector3(AXIS_Y); //the normal of the camera, used to do local translations
+	vector3 m_v3CameraForward = vector3(AXIS_Z); //the forward of the camera
+	vector3 m_v3CameraPerp = vector3(-AXIS_X); //the target of the camera
+
+	vector3 m_v3Rotation = vector3(0.0f);
+	quaternion m_qOrientation = quaternion(0.0f, 0.0f, 0.0f, 0.0f);
 
 	bool m_bPerspective = true; //perspective view? False is Orthographic
 
 	float m_fFOV = 45.0f; //Field of View
+	float m_fTargetDistance = 10.0f; //the distance to be maintained between the target and the position
 
 	vector2 m_v2Resolution = vector2(1280.0f, 720.0f); //Resolution of the window
 	vector2 m_v2NearFar = vector2(0.001f, 1000.0f); //Near and Far planes
@@ -230,6 +238,20 @@ public:
 	OUTPUT: ---
 	*/
 	void MoveSideways(float a_fDistance = 0.1f);
+
+	/*
+	USAGE: Vertical rotation
+	ARGUMENTS: float a_fDistance = 0.1f -> amount of movement
+	OUTPUT: ---
+	*/
+	void RotatePitch(float a_fDistance = 0.1f);
+	/*
+	USAGE: Horizontal rotation
+	ARGUMENTS: float a_fDistance = 0.1f -> amount of movement
+	OUTPUT: ---
+	*/
+	void RotateYaw(float a_fDistance = 0.1f);
+	void Rotate(vector3 change);
 };
 
 } //namespace Simplex

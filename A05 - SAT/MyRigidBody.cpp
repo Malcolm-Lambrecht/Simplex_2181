@@ -276,6 +276,131 @@ void MyRigidBody::AddToRenderList(void)
 
 uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 {
+	//get the three local axes of the creeper in world space
+	vector3 A_axis[3]; //creeper axes, 0:X, 1:Y, 2:Z
+
+	float A_halfwidths[3];//halfwidth of each axis, stored so i can loop through them more easily
+	A_halfwidths[0] = GetHalfWidth().x;
+	A_halfwidths[1] = GetHalfWidth().y;
+	A_halfwidths[2] = GetHalfWidth().z;
+
+	//calculate the axes
+	A_axis[0] = vector4(AXIS_X, 0.0f) * m_m4ToWorld;
+	A_axis[0] = glm::normalize(A_axis[0]); //X
+
+	A_axis[1] = vector4(AXIS_Y, 0.0f) * m_m4ToWorld;
+	A_axis[1] = glm::normalize(A_axis[1]); //Y
+	
+	A_axis[2] = vector4(AXIS_Z, 0.0f) * m_m4ToWorld;
+	A_axis[2] = glm::normalize(A_axis[2]); //Z
+
+	//get the three local axes of steve in world space
+	vector3 B_axis[3]; //steve axes 0:X, 1:Y, 2:Z
+
+	float B_halfwidths[3];//halfwidth of each axis, stored so i can loop through them more easily
+	B_halfwidths[0] = a_pOther->GetHalfWidth().x;
+	B_halfwidths[1] = a_pOther->GetHalfWidth().y;
+	B_halfwidths[2] = a_pOther->GetHalfWidth().z;
+
+	//calculate the axes
+	B_axis[0] = vector4(AXIS_X, 0.0f) * a_pOther->m_m4ToWorld;
+	B_axis[0] = glm::normalize(B_axis[0]); //X
+
+	B_axis[1] = vector4(AXIS_Y, 0.0f) * a_pOther->m_m4ToWorld;
+	B_axis[1] = glm::normalize(B_axis[1]); //Y
+
+	B_axis[2] = vector4(AXIS_Z, 0.0f) * a_pOther->m_m4ToWorld;
+	B_axis[2] = glm::normalize(B_axis[2]); //Z
+
+	//debug print out the local axii
+	//std::cout << "Creeper" << std::endl;
+	for (int i = 0; i < 3; i++) {
+		//std::cout << "(" << A_axis[i].x << ", " << A_axis[i].y << ", " << A_axis[i].z << ")" << std::endl;
+	}
+
+	//std::cout << "Steve" << std::endl;
+	for (int i = 0; i < 3; i++) {
+		//std::cout << "(" << B_axis[i].x << ", " << B_axis[i].y << ", " << B_axis[i].z << ")" << std::endl;
+	}
+
+	//calculate translation from b to A
+	vector3 translation = a_pOther->GetCenterGlobal() - GetCenterGlobal(); //translation vector from b to a
+	//bring it into the coordinate space of a
+	translation = vector3(glm::dot(translation,A_axis[0]), glm::dot(translation, A_axis[1]), glm::dot(translation, A_axis[2]));
+	//std::cout << "Translation: (" << translation.x << ", " << translation.y << ", " << translation.z << ")" << std::endl;
+	//calculate roation matrix for b in as coordinate frame
+	matrix3 R, AbsR;
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			R[i][j] = glm::dot(A_axis[i], B_axis[j]);
+			AbsR[i][j] = glm::abs(R[i][j]) + DBL_EPSILON;
+		}
+	}
+
+	float ra, rb;
+	//make the tests for A local axes
+	for (int i = 0; i < 3; i++) {
+		ra = A_halfwidths[i];
+		rb = B_halfwidths[0] * AbsR[i][0] + B_halfwidths[1] * AbsR[i][1] + B_halfwidths[2] * AbsR[i][2];
+		if (glm::abs(translation[i]) > ra + rb) {
+			return 1;
+		}
+	}
+
+	//make the tests for Blocal axes
+	for (int i = 0; i < 3; i++) {
+		ra = A_halfwidths[0] * AbsR[0][i] + A_halfwidths[1] * AbsR[1][i] + A_halfwidths[2] * AbsR[2][i];
+		rb = B_halfwidths[i];
+		if (glm::abs(translation[0] * R[0][i] + translation[1] * R[1][i] + translation[2] * R[2][i]) > ra + rb) {
+			return 1;
+		}
+	}
+
+	//test A0 xB0
+	ra = A_halfwidths[1] * AbsR[2][0] + A_halfwidths[2] * AbsR[1][0];
+	rb = B_halfwidths[1] * AbsR[0][2] + B_halfwidths[2] * AbsR[0][1];
+	if (glm::abs(translation[2] * R[1][0] - translation[1] * R[2][0]) > ra + rb) return 1;
+
+	//test A0 xB1
+	ra = A_halfwidths[1] * AbsR[2][1] + A_halfwidths[2] * AbsR[1][1];
+	rb = B_halfwidths[0] * AbsR[0][2] + B_halfwidths[2] * AbsR[0][0];
+	if (glm::abs(translation[2] * R[1][1] - translation[1] * R[2][1]) > ra + rb) return 1;
+
+	//test A0 xB2
+	ra = A_halfwidths[1] * AbsR[2][2] + A_halfwidths[2] * AbsR[1][2];
+	rb = B_halfwidths[0] * AbsR[0][1] + B_halfwidths[1] * AbsR[0][0];
+	if (glm::abs(translation[2] * R[1][2] - translation[1] * R[2][2]) > ra + rb) return 1;
+
+	//test A1 xB0
+	ra = A_halfwidths[0] * AbsR[2][0] + A_halfwidths[2] * AbsR[0][0];
+	rb = B_halfwidths[1] * AbsR[1][2] + B_halfwidths[2] * AbsR[1][1];
+	if (glm::abs(translation[0] * R[2][0] - translation[2] * R[0][0]) > ra + rb) return 1;
+
+	//test A1 xB1
+	ra = A_halfwidths[0] * AbsR[2][1] + A_halfwidths[2] * AbsR[0][1];
+	rb = B_halfwidths[0] * AbsR[1][2] + B_halfwidths[2] * AbsR[1][0];
+	if (glm::abs(translation[0] * R[2][1] - translation[2] * R[0][1]) > ra + rb) return 1;
+
+	//test A1 xB2
+	ra = A_halfwidths[0] * AbsR[2][2] + A_halfwidths[2] * AbsR[0][2];
+	rb = B_halfwidths[0] * AbsR[1][1] + B_halfwidths[1] * AbsR[1][0];
+	if (glm::abs(translation[0] * R[2][2] - translation[2] * R[0][2]) > ra + rb) return 1;
+
+	//test A2 xB0
+	ra = A_halfwidths[0] * AbsR[1][0] + A_halfwidths[1] * AbsR[0][0];
+	rb = B_halfwidths[1] * AbsR[2][2] + B_halfwidths[2] * AbsR[2][1];
+	if (glm::abs(translation[1] * R[0][0] - translation[0] * R[1][0]) > ra + rb) return 1;
+
+	//test A2 xB1
+	ra = A_halfwidths[0] * AbsR[1][1] + A_halfwidths[1] * AbsR[0][1];
+	rb = B_halfwidths[0] * AbsR[2][2] + B_halfwidths[2] * AbsR[2][0];
+	if (glm::abs(translation[1] * R[0][1] - translation[0] * R[1][1]) > ra + rb) return 1;
+
+	//test A2 xB2
+	ra = A_halfwidths[0] * AbsR[1][2] + A_halfwidths[1] * AbsR[0][2];
+	rb = B_halfwidths[0] * AbsR[2][1] + B_halfwidths[1] * AbsR[2][0];
+	if (glm::abs(translation[1] * R[0][2] - translation[0] * R[1][2]) > ra + rb) return 1;
+
 	/*
 	Your code goes here instead of this comment;
 
@@ -286,7 +411,8 @@ uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 	Simplex that might help you [eSATResults] feel free to use it.
 	(eSATResults::SAT_NONE has a value of 0)
 	*/
-
+	
 	//there is no axis test that separates this two objects
 	return eSATResults::SAT_NONE;
+
 }

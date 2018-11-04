@@ -152,11 +152,49 @@ void Simplex::MyCamera::CalculateProjectionMatrix(void)
 
 void MyCamera::MoveForward(float a_fDistance)
 {
-	//The following is just an example and does not take in account the forward vector (AKA view vector)
-	m_v3Position += vector3(0.0f, 0.0f,-a_fDistance);
-	m_v3Target += vector3(0.0f, 0.0f, -a_fDistance);
-	m_v3Above += vector3(0.0f, 0.0f, -a_fDistance);
+
+	m_v3Position -= glm::normalize(m_v3CameraForward * a_fDistance) / 9.0f;
+	m_v3Target -= glm::normalize(m_v3CameraForward * a_fDistance) / 9.0f;
+	m_v3Above -= glm::normalize(m_v3CameraForward * a_fDistance) / 9.0f;
+
 }
 
-void MyCamera::MoveVertical(float a_fDistance){}//Needs to be defined
-void MyCamera::MoveSideways(float a_fDistance){}//Needs to be defined
+void MyCamera::MoveVertical(float a_fDistance){
+	m_v3Position -= m_v3CameraUp * a_fDistance;
+	m_v3Target -= m_v3CameraUp * a_fDistance;
+	m_v3Above -= m_v3CameraUp * a_fDistance;
+}
+
+
+void MyCamera::MoveSideways(float a_fDistance){
+
+	m_v3Position += m_v3CameraPerp * a_fDistance;
+	m_v3Target += m_v3CameraPerp * a_fDistance;
+	m_v3Above += m_v3CameraPerp * a_fDistance;
+}
+
+
+
+void MyCamera::RotateYaw(float a_fDistance)//rotate around y axis, cameraUp doesnt change
+{
+	m_v3CameraForward = m_v3Target - m_v3Position;
+	m_v3CameraPerp = glm::normalize(glm::cross(m_v3CameraForward, m_v3CameraUp));
+
+	m_v3Target = m_v3CameraForward - (m_v3CameraPerp * a_fDistance * 75.0f);
+	m_v3Target.y = m_v3Position.y;
+	//m_v3Target = glm::normalize(m_v3Target - m_v3Position) * 100.0f;
+	//m_v3Target = glm::normalize(m_v3Target);
+	//lookVec += m_v3CameraPerp * a_fDistance;
+
+	//m_v3Target = glm::normalize(lookVec);
+
+	//set new cam forward m_v3CameraForward
+	//m_v3CameraForward = glm::normalize(m_v3Target - m_v3Position);
+	//set new cam right m_v3CameraPerp
+	//m_v3CameraPerp = glm::normalize(glm::cross(m_v3CameraForward, m_v3CameraUp));
+}
+
+void MyCamera::RotatePitch(float a_fDistance)//rotate around x axis, cameraRight doesnt change
+{
+
+}
