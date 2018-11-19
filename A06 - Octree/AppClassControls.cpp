@@ -112,39 +112,33 @@ void Application::ProcessKeyReleased(sf::Event a_event)
 		m_pCameraMngr->SetFPS(bFPSControl);
 		break;
 	case sf::Keyboard::PageUp:
-		++m_uOctantID;
-		/*
-		if (m_uOctantID >= m_pRoot->GetOctantCount())
-			m_uOctantID = - 1;
-		*/
+		m_pRoot->ToggleDisplay(true);
 		break;
 	case sf::Keyboard::PageDown:
-		--m_uOctantID;
-		/*
-		if (m_uOctantID >= m_pRoot->GetOctantCount())
-			m_uOctantID = - 1;
-		*/
+		m_pRoot->ToggleDisplay(false);
 		break;
+	case sf::Keyboard::K:
 	case sf::Keyboard::Add:
-		if (m_uOctantLevels < 4)
+		if (m_uOctantLevels < 5)
 		{
 			m_pEntityMngr->ClearDimensionSetAll();
 			++m_uOctantLevels;
-			/*
+			
 			SafeDelete(m_pRoot);
-			m_pRoot = new MyOctant(m_uOctantLevels, 5);
-			*/
+			m_pRoot = new MyOctant(m_EntityIndexList, m_uOctantLevels, 5);
+			//std::cout << "increment subdivisions" << std::endl;
 		}
 		break;
+	case sf::Keyboard::L:
 	case sf::Keyboard::Subtract:
 		if (m_uOctantLevels > 0)
 		{
 			m_pEntityMngr->ClearDimensionSetAll();
 			--m_uOctantLevels;
-			/*
+			
 			SafeDelete(m_pRoot);
-			m_pRoot = new MyOctant(m_uOctantLevels, 5);
-			*/
+			m_pRoot = new MyOctant(m_EntityIndexList, m_uOctantLevels, 5);
+			//std::cout << "decrement subdivisions" << std::endl;
 		}
 		break;
 	case sf::Keyboard::LShift:
